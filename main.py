@@ -29,14 +29,18 @@ def token_required(f):
 
 @app.route('/login', methods=['POST'])
 def login():
-    auth = request.authorization
+    try:
+        auth = request.authorization
 
-    if auth and auth.password == 'password':
-        token = jwt.encode({'user': auth.username, 'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=30)},
-                           app.config['SECRET_KEY'])
-        return jsonify({'token': token.decode('UTF-8')})
+        if auth and auth.password == 'password':
+            token = jwt.encode({'user': auth.username, 'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=30)},
+                               app.config['SECRET_KEY'])
+            return {'token': token}
 
-    return jsonify({'message': 'Invalid credentials'}), 401
+        return jsonify({'message': 'Invalid credentials'}), 401
+    except Exception as e:
+        print(f"Error in login: {str(e)}")
+        return {'error': 'Internal Server Error'}, 500
 
 
 @app.route('/protected', methods=['GET'])
